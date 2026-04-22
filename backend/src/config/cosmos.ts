@@ -11,6 +11,11 @@ export interface CosmosContext {
   containers: CosmosContainers;
 }
 
+interface CosmosContainerCheckResult {
+  id: string;
+  partitionKeyPaths: string[];
+}
+
 export function createCosmosContext(): CosmosContext | null {
   if (env.USE_IN_MEMORY_DB) {
     return null;
@@ -34,4 +39,30 @@ export function createCosmosContext(): CosmosContext | null {
       listings: database.container(env.COSMOS_LISTINGS_CONTAINER)
     }
   };
+}
+
+async function readContainerMetadata(container: Container): Promise<CosmosContainerCheckResult> {
+  const { resource } = await container.read();
+
+  if (!resource) {
+    throw new Error("Cosmos container metadata could not be read.");
+  }
+
+  return {
+    id: resource.id,
+    partitionKeyPaths: resource.partitionKey?.paths ?? []
+  };
+}
+
+export async function assertCosmosReady(cosmos: CosmosContext): Promise<void> {
+  const database = cosmos.client.database(env.COSMOS_DATABASE_ID);
+  await database.read();
+
+  const usersContainer = await readContainerMetadata(cosmos.containers.users);
+
+  if (!usersContainer.partitionKeyPaths.includes("/id")) {
+    throw new Error(
+      `Cosmos users container "${usersContainer.id}" must use partition key "/id".`
+    );
+  }
 }

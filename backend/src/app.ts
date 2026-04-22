@@ -1,6 +1,6 @@
 import Fastify from "fastify";
 import { createBlobContext } from "./config/blob.js";
-import { createCosmosContext } from "./config/cosmos.js";
+import { assertCosmosReady, createCosmosContext } from "./config/cosmos.js";
 import { env } from "./config/env.js";
 import { AuthController } from "./controllers/auth.controller.js";
 import { ListingsController } from "./controllers/listings.controller.js";
@@ -29,6 +29,13 @@ export async function buildApp() {
 
   const cosmos = createCosmosContext();
   const blob = createBlobContext();
+
+  if (cosmos) {
+    await assertCosmosReady(cosmos);
+    app.log.info("Database connection established (Cosmos DB).");
+  } else {
+    app.log.info("Database connection running in memory mode.");
+  }
 
   const usersRepository = cosmos
     ? new CosmosUsersRepository(cosmos.containers.users)

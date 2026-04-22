@@ -30,6 +30,25 @@ Foi adicionada uma API em `backend/` com arquitetura por camadas:
 
 Por omissão, o backend arranca com `USE_IN_MEMORY_DB=true` e `BLOB_USE_MOCK=true`.
 
+### Ativar Cosmos DB localmente (registo persistente)
+
+1. Editar `backend/.env`:
+   - `USE_IN_MEMORY_DB=false`
+   - preencher `COSMOS_ENDPOINT` e `COSMOS_KEY`
+   - confirmar `COSMOS_DATABASE_ID` e `COSMOS_USERS_CONTAINER`
+2. Garantir que o container de utilizadores no Cosmos usa partition key `/id`.
+3. Arrancar o backend e confirmar no log:
+   - `Database connection established (Cosmos DB).`
+
+Se a ligação à base de dados falhar no arranque, o backend termina com erro para evitar correr em estado inválido.
+
+### Validar registo no Cosmos
+
+1. Fazer registo:
+   - `POST /auth/register`
+2. Repetir com o mesmo email para validar conflito:
+   - esperado `409 Conflict`
+
 ### Frontend para backend
 
 O frontend usa `VITE_API_URL` para apontar para a API.  
