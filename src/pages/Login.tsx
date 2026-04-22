@@ -71,15 +71,6 @@ const Login = () => {
             </Button>
           </form>
 
-          <div className="mt-6 rounded-lg bg-muted p-4 text-xs text-muted-foreground">
-            <p className="font-medium text-foreground">Contas de demonstração:</p>
-            <ul className="mt-1 space-y-0.5">
-              <li>• <code>marta@uninest.pt</code> (senhorio)</li>
-              <li>• <code>joao@uninest.pt</code> (estudante)</li>
-              <li>• <code>admin@uninest.pt</code> (admin)</li>
-            </ul>
-          </div>
-
           <p className="mt-6 text-center text-sm text-muted-foreground">
             Ainda não tens conta?{" "}
             <Link to="/register" className="font-medium text-primary hover:underline">

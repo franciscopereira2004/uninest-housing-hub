@@ -58,9 +58,11 @@ Se não estiver definida, usa `http://localhost:4000`.
 
 1. Criar ambiente na raiz:
    - `cp .env.example .env`
-2. Subir serviços em dev:
+2. Configurar backend:
+   - garantir que `backend/.env` existe e está com `USE_IN_MEMORY_DB=false` para Cosmos
+3. Subir serviços em dev:
    - `npm run docker:up`
-3. Ver logs:
+4. Ver logs:
    - `npm run docker:logs`
-4. Parar:
+5. Parar:
    - `npm run docker:down`

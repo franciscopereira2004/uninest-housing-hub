@@ -4,31 +4,7 @@ import room2 from "@/assets/room-2.jpg";
 import room3 from "@/assets/room-3.jpg";
 import room4 from "@/assets/room-4.jpg";
 
-export const seedUsers: User[] = [
-  {
-    id: "u-landlord-1",
-    role: "landlord",
-    name: "Marta Ribeiro",
-    email: "marta@uninest.pt",
-    phone: "+351 912 345 678",
-    createdAt: "2024-09-01T10:00:00Z",
-  },
-  {
-    id: "u-student-1",
-    role: "student",
-    name: "João Pereira",
-    email: "joao@uninest.pt",
-    phone: "+351 932 111 222",
-    createdAt: "2025-02-12T10:00:00Z",
-  },
-  {
-    id: "u-admin-1",
-    role: "admin",
-    name: "Admin UniNest",
-    email: "admin@uninest.pt",
-    createdAt: "2024-01-01T10:00:00Z",
-  },
-];
+export const seedUsers: User[] = [];
 
 export const seedProperties: Property[] = [
   {
