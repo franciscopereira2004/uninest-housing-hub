@@ -1,0 +1,48 @@
+services:
+  frontend:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "${FRONTEND_PORT:-5173}:5173"
+    volumes:
+      - .:/app
+      - /app/node_modules
+    environment:
+      NODE_ENV: development
+      VITE_API_URL: "http://localhost:${BACKEND_PORT:-4000}"
+    depends_on:
+      - backend
+    restart: unless-stopped
+    command: npm run dev -- --host 0.0.0.0 --port 5173
+
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    ports:
+      - "${BACKEND_PORT:-4000}:4000"
+    volumes:
+      - ./backend:/app
+      - /app/node_modules
+    environment:
+      NODE_ENV: development
+      PORT: 4000
+      FRONTEND_ORIGIN: "http://localhost:${FRONTEND_PORT:-5173}"
+      USE_IN_MEMORY_DB: "${USE_IN_MEMORY_DB:-true}"
+      COSMOS_ENDPOINT: "${COSMOS_ENDPOINT:-}"
+      COSMOS_KEY: "${COSMOS_KEY:-}"
+      COSMOS_DATABASE_ID: "${COSMOS_DATABASE_ID:-uninest}"
+      COSMOS_USERS_CONTAINER: "${COSMOS_USERS_CONTAINER:-users}"
+      COSMOS_LISTINGS_CONTAINER: "${COSMOS_LISTINGS_CONTAINER:-listings}"
+      BLOB_CONNECTION_STRING: "${BLOB_CONNECTION_STRING:-}"
+      BLOB_AVATARS_CONTAINER: "${BLOB_AVATARS_CONTAINER:-avatars}"
+      BLOB_ROOM_IMAGES_CONTAINER: "${BLOB_ROOM_IMAGES_CONTAINER:-room-images}"
+      BLOB_PROPERTY_IMAGES_CONTAINER: "${BLOB_PROPERTY_IMAGES_CONTAINER:-property-images}"
+      BLOB_USE_MOCK: "${BLOB_USE_MOCK:-true}"
+      BLOB_MOCK_BASE_URL: "${BLOB_MOCK_BASE_URL:-https://example.blob.core.windows.net}"
+      JWT_SECRET: "${JWT_SECRET:-change-me-in-production}"
+      JWT_EXPIRES_IN: "${JWT_EXPIRES_IN:-7d}"
+      MAX_UPLOAD_SIZE_MB: "${MAX_UPLOAD_SIZE_MB:-5}"
+    restart: unless-stopped
+    command: npm run dev

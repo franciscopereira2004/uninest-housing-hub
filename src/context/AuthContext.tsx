@@ -1,33 +1,31 @@
 import { createContext, useContext, useEffect, useMemo, useState, type ReactNode } from "react";
+import { apiRequest } from "@/lib/api";
 import type { User, UserRole } from "@/types";
-import { seedUsers } from "@/data/seed";
 
-const STORAGE_KEY = "uninest.session";
-const USERS_KEY = "uninest.users";
+const SESSION_KEY = "uninest.session";
+const TOKEN_KEY = "uninest.token";
 
 interface AuthContextValue {
   user: User | null;
   loading: boolean;
-  login: (email: string, _password: string) => Promise<User>;
+  login: (email: string, password: string) => Promise<User>;
   register: (data: { name: string; email: string; password: string; role: UserRole; phone?: string }) => Promise<User>;
   logout: () => void;
 }
 
 const AuthContext = createContext<AuthContextValue | undefined>(undefined);
 
-function readUsers(): User[] {
-  try {
-    const stored = localStorage.getItem(USERS_KEY);
-    if (stored) return JSON.parse(stored) as User[];
-  } catch {
-    /* noop */
-  }
-  localStorage.setItem(USERS_KEY, JSON.stringify(seedUsers));
-  return seedUsers;
+interface AuthResponse {
+  user: User;
+  token: string;
 }
 
-function writeUsers(users: User[]) {
-  localStorage.setItem(USERS_KEY, JSON.stringify(users));
+interface MeResponse {
+  user: User;
+}
+
+function getToken() {
+  return localStorage.getItem(TOKEN_KEY);
 }
 
 export function AuthProvider({ children }: { children: ReactNode }) {
@@ -35,52 +33,64 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    try {
-      const raw = localStorage.getItem(STORAGE_KEY);
-      if (raw) setUser(JSON.parse(raw) as User);
-    } catch {
-      /* noop */
-    }
-    setLoading(false);
+    const bootstrapSession = async () => {
+      const token = getToken();
+      if (!token) {
+        setLoading(false);
+        return;
+      }
+
+      try {
+        const { user: me } = await apiRequest<MeResponse>("/auth/me", {
+          token
+        });
+        setUser(me);
+        localStorage.setItem(SESSION_KEY, JSON.stringify(me));
+      } catch {
+        localStorage.removeItem(TOKEN_KEY);
+        localStorage.removeItem(SESSION_KEY);
+        setUser(null);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    void bootstrapSession();
   }, []);
 
   const value = useMemo<AuthContextValue>(
     () => ({
       user,
       loading,
-      async login(email) {
-        const users = readUsers();
-        const found = users.find((u) => u.email.toLowerCase() === email.toLowerCase());
-        if (!found) throw new Error("Conta não encontrada. Verifica o email ou regista-te.");
-        localStorage.setItem(STORAGE_KEY, JSON.stringify(found));
-        setUser(found);
-        return found;
+      async login(email, password) {
+        const { user: loggedUser, token } = await apiRequest<AuthResponse>("/auth/login", {
+          method: "POST",
+          body: { email, password }
+        });
+
+        localStorage.setItem(TOKEN_KEY, token);
+        localStorage.setItem(SESSION_KEY, JSON.stringify(loggedUser));
+        setUser(loggedUser);
+        return loggedUser;
       },
-      async register({ name, email, role, phone }) {
-        const users = readUsers();
-        if (users.some((u) => u.email.toLowerCase() === email.toLowerCase())) {
-          throw new Error("Já existe uma conta com este email.");
-        }
-        const newUser: User = {
-          id: `u-${Date.now()}`,
-          name,
-          email,
-          role,
-          phone,
-          createdAt: new Date().toISOString(),
-        };
-        const next = [...users, newUser];
-        writeUsers(next);
-        localStorage.setItem(STORAGE_KEY, JSON.stringify(newUser));
+      async register({ name, email, password, role, phone }) {
+        const { user: newUser, token } = await apiRequest<AuthResponse>("/auth/register", {
+          method: "POST",
+          body: { name, email, password, role, phone }
+        });
+
+        localStorage.setItem(TOKEN_KEY, token);
+        localStorage.setItem(SESSION_KEY, JSON.stringify(newUser));
         setUser(newUser);
         return newUser;
       },
       logout() {
-        localStorage.removeItem(STORAGE_KEY);
+        localStorage.removeItem(SESSION_KEY);
+        localStorage.removeItem(TOKEN_KEY);
         setUser(null);
-      },
+      }
     }),
-    [user, loading],
+    [user, loading]
   );
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

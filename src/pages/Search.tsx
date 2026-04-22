@@ -1,4 +1,4 @@
-import { useMemo } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useSearchParams } from "react-router-dom";
 import { SlidersHorizontal } from "lucide-react";
 import { PublicLayout } from "@/components/layout/PublicLayout";
@@ -7,11 +7,14 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
-import { getCities, getListings } from "@/data/listings";
-import type { SearchFilters } from "@/types";
+import { fetchListings, getCities } from "@/data/listings";
+import type { Listing, SearchFilters } from "@/types";
+import { toast } from "sonner";
 
 const Search = () => {
   const [params, setParams] = useSearchParams();
+  const [results, setResults] = useState<Listing[]>([]);
+  const [loading, setLoading] = useState(true);
   const cities = getCities();
 
   const filters: SearchFilters = useMemo(
@@ -28,7 +31,21 @@ const Search = () => {
     [params],
   );
 
-  const results = getListings(filters);
+  useEffect(() => {
+    const loadResults = async () => {
+      setLoading(true);
+      try {
+        const data = await fetchListings(filters);
+        setResults(data);
+      } catch (error) {
+        toast.error(error instanceof Error ? error.message : "Erro ao carregar anúncios.");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    void loadResults();
+  }, [filters]);
 
   const update = (patch: Record<string, string | undefined>) => {
     const next = new URLSearchParams(params);
@@ -49,7 +66,7 @@ const Search = () => {
             Pesquisa de alojamentos
           </h1>
           <p className="mt-2 text-muted-foreground">
-            {results.length} {results.length === 1 ? "resultado" : "resultados"}
+            {loading ? "A carregar..." : `${results.length} ${results.length === 1 ? "resultado" : "resultados"}`}
             {filters.city ? ` em ${filters.city}` : ""}.
           </p>
         </header>
@@ -156,7 +173,7 @@ const Search = () => {
 
           {/* Results */}
           <div>
-            {results.length === 0 ? (
+            {!loading && results.length === 0 ? (
               <div className="rounded-2xl border border-dashed bg-muted/40 p-16 text-center">
                 <h3 className="font-display text-xl font-semibold">Sem resultados</h3>
                 <p className="mt-2 text-sm text-muted-foreground">
@@ -168,9 +185,11 @@ const Search = () => {
               </div>
             ) : (
               <div className="grid gap-6 sm:grid-cols-2 xl:grid-cols-3">
-                {results.map((l) => (
-                  <ListingCard key={l.id} listing={l} />
-                ))}
+                {loading
+                  ? Array.from({ length: 6 }).map((_, idx) => (
+                      <div key={idx} className="h-[360px] animate-pulse rounded-2xl border bg-muted/50" />
+                    ))
+                  : results.map((l) => <ListingCard key={l.id} listing={l} />)}
               </div>
             )}
           </div>

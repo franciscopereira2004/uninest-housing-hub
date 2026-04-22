@@ -1,0 +1,17 @@
+---
+description: Enforce English commit messages with proper format
+alwaysApply: true
+---
+
+# Commit Message Language and Format
+
+- Always write commit messages in clear English.
+- Use Conventional Commits format: `<type>(optional-scope): imperative summary`.
+- Keep the subject concise, objective, and action-oriented.
+- Start the subject with a lowercase verb in imperative mood (example: `add`, `fix`, `update`, `refactor`).
+- Avoid vague messages like `changes`, `update stuff`, or non-English text.
+
+Examples:
+- `feat(auth): add JWT refresh token rotation`
+- `fix(search): handle empty location filters correctly`
+- `docs(readme): clarify backend setup steps`

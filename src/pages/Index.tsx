@@ -36,8 +36,8 @@ const Index = () => {
   return (
     <PublicLayout>
       {/* Hero */}
-      <section className="relative overflow-hidden">
-        <div className="absolute inset-0 -z-10">
+      <section className="relative isolate overflow-hidden">
+        <div className="absolute inset-0 z-0">
           <img
             src={heroImg}
             alt="Quarto de estudante luminoso e acolhedor"
@@ -48,7 +48,7 @@ const Index = () => {
           <div className="absolute inset-0 bg-gradient-hero" />
         </div>
 
-        <div className="container relative py-24 md:py-32 lg:py-40">
+        <div className="container relative z-10 py-24 md:py-32 lg:py-40">
           <div className="max-w-3xl animate-fade-in-up text-primary-foreground">
             <span className="inline-flex items-center gap-2 rounded-full bg-background/15 px-3 py-1 text-xs font-medium backdrop-blur">
               <Sparkles className="h-3.5 w-3.5" />
