@@ -11,6 +11,8 @@
     "preview": "vite preview",
     "test": "vitest run",
     "test:watch": "vitest",
+    "start": "node backend/dist/server.js",
+    "postinstall": "npm --prefix backend install && npm --prefix backend run build && npm run build",
     "backend:dev": "npm --prefix backend run dev",
     "backend:build": "npm --prefix backend run build",
     "docker:up": "docker compose up -d --build",
