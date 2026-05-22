@@ -5,7 +5,7 @@ FROM node:20-alpine AS frontend-build
 WORKDIR /app
 
 COPY package*.json ./
-RUN npm ci --legacy-peer-deps
+RUN npm ci --legacy-peer-deps --ignore-scripts
 
 COPY . .
 RUN npm run build
@@ -29,11 +29,11 @@ COPY --from=backend-build /app/backend/dist /app/backend/dist
 COPY --from=frontend-build /app/dist /app/dist
 
 WORKDIR /app/backend
-RUN npm ci --omit=dev
+RUN npm ci --omit=dev --ignore-scripts
 
 ENV NODE_ENV=production
 ENV SERVE_FRONTEND=true
 
-EXPOSE 8081
+EXPOSE 8080
 
 CMD ["node", "dist/server.js"]

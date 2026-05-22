@@ -9,11 +9,11 @@ services:
       context: .
       dockerfile: Dockerfile
     ports:
-      - "8081:8081"
+      - "8080:8080"
     environment:
       NODE_ENV: production
       SERVE_FRONTEND: "true"
-      PORT: 8081
+      PORT: 8080
       USE_IN_MEMORY_DB: "true"
       BLOB_USE_MOCK: "true"
       JWT_SECRET: change-me-in-production

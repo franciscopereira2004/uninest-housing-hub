@@ -213,15 +213,15 @@ A imagem produzida pelo `Dockerfile` é single-container: Fastify serve a API em
 
 ```bash
 docker build -t uninest:prod .
-docker run -p 8081:8081 \
+docker run -p 8080:8080 \
   -e USE_IN_MEMORY_DB=true \
   -e BLOB_USE_MOCK=true \
   -e JWT_SECRET=test \
-  -e PORT=8081 \
+  -e PORT=8080 \
   uninest:prod
 
 # noutro terminal
-curl http://localhost:8081/api/health
+curl http://localhost:8080/api/health
 # → { "status": "ok", "uptime": …, "timestamp": … }
 ```
 
