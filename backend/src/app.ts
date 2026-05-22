@@ -1,4 +1,7 @@
+import fastifyStatic from "@fastify/static";
 import Fastify from "fastify";
+import path from "node:path";
+import { fileURLToPath } from "node:url";
 import { assertBlobReady, createBlobContext } from "./config/blob.js";
 import { assertCosmosReady, createCosmosContext } from "./config/cosmos.js";
 import { env } from "./config/env.js";
@@ -154,6 +157,29 @@ export async function buildApp() {
     uploadController,
     usersController
   });
+
+  if (process.env.SERVE_FRONTEND === "true") {
+    const __filename = fileURLToPath(import.meta.url);
+    const __dirname = path.dirname(__filename);
+    // Compiled layout: backend/dist/app.js → ../../dist is the frontend build at repo root.
+    const frontendDist = path.resolve(__dirname, "../../dist");
+
+    await app.register(fastifyStatic, {
+      root: frontendDist,
+      prefix: "/",
+      wildcard: false
+    });
+
+    app.setNotFoundHandler((request, reply) => {
+      const url = request.raw.url ?? "";
+      if (url.startsWith("/api") || url.startsWith("/ws")) {
+        return reply.code(404).send({ error: "Not found", path: url });
+      }
+      return reply.sendFile("index.html");
+    });
+
+    app.log.info(`[startup] Serving frontend from ${frontendDist}`);
+  }
 
   return app;
 }

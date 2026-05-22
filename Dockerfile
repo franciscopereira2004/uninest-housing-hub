@@ -1,12 +1,39 @@
-FROM node:20-alpine
+# syntax=docker/dockerfile:1.6
 
+# ---------- Stage 1: build the Vite frontend ----------
+FROM node:20-alpine AS frontend-build
 WORKDIR /app
 
 COPY package*.json ./
-RUN npm install --legacy-peer-deps
+RUN npm ci --legacy-peer-deps
 
 COPY . .
+RUN npm run build
 
-EXPOSE 5173
+# ---------- Stage 2: build the Fastify backend ----------
+FROM node:20-alpine AS backend-build
+WORKDIR /app/backend
 
-CMD ["npm", "run", "dev", "--", "--host", "0.0.0.0", "--port", "5173"]
+COPY backend/package*.json ./
+RUN npm ci
+
+COPY backend/ ./
+RUN npm run build
+
+# ---------- Stage 3: production runtime ----------
+FROM node:20-alpine AS production
+WORKDIR /app
+
+COPY --from=backend-build /app/backend/package*.json /app/backend/
+COPY --from=backend-build /app/backend/dist /app/backend/dist
+COPY --from=frontend-build /app/dist /app/dist
+
+WORKDIR /app/backend
+RUN npm ci --omit=dev
+
+ENV NODE_ENV=production
+ENV SERVE_FRONTEND=true
+
+EXPOSE 8081
+
+CMD ["node", "dist/server.js"]

@@ -1,4 +1,5 @@
-const API_BASE_URL = import.meta.env.VITE_API_URL || "http://localhost:4000";
+const API_HOST = import.meta.env.VITE_API_URL ?? "";
+const API_PREFIX = "/api";
 
 type RequestMethod = "GET" | "POST" | "PUT" | "PATCH" | "DELETE";
 
@@ -42,7 +43,7 @@ export class ApiError extends Error {
 
 export async function apiRequest<T>(path: string, options: RequestOptions = {}): Promise<T> {
   const hasBody = options.body !== undefined;
-  const response = await fetch(`${API_BASE_URL}${path}`, {
+  const response = await fetch(`${API_HOST}${API_PREFIX}${path}`, {
     method: options.method ?? "GET",
     headers: {
       ...(hasBody ? { "Content-Type": "application/json" } : {}),
@@ -68,5 +69,5 @@ export async function apiRequest<T>(path: string, options: RequestOptions = {}):
 }
 
 export function getApiBaseUrl() {
-  return API_BASE_URL;
+  return API_HOST;
 }

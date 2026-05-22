@@ -24,7 +24,7 @@ async function uploadImage(path: string, file: File): Promise<{ url: string }> {
   const form = new FormData();
   form.append("file", file);
 
-  const response = await fetch(`${getApiBaseUrl()}/uploads/${path}`, {
+  const response = await fetch(`${getApiBaseUrl()}/api/uploads/${path}`, {
     method: "POST",
     headers: token ? { Authorization: `Bearer ${token}` } : undefined,
     body: form

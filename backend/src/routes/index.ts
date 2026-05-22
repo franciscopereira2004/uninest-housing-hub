@@ -13,8 +13,9 @@ import type { MessagingService } from "../services/messaging.service.js";
 import { adminListingsRoutes } from "./admin-listings.routes.js";
 import { authRoutes } from "./auth.routes.js";
 import { favouritesRoutes } from "./favourites.routes.js";
+import { healthRoutes } from "./health.js";
 import { landlordListingsRoutes, listingsRoutes } from "./listings.routes.js";
-import { messagingRoutes } from "./messaging.routes.js";
+import { messagingRestRoutes, messagingWsRoutes } from "./messaging.routes.js";
 import { profileRoutes } from "./profile.routes.js";
 import { adminReportsRoutes, reportsRoutes } from "./reports.routes.js";
 import { uploadsRoutes } from "./uploads.routes.js";
@@ -35,57 +36,59 @@ interface RoutesDependencies {
 }
 
 export async function registerRoutes(app: FastifyInstance, deps: RoutesDependencies) {
-  app.get("/health", async () => ({
-    status: "ok",
-    timestamp: new Date().toISOString()
-  }));
+  await app.register(healthRoutes, { prefix: "/api/health" });
 
   await app.register(async (authScope) => authRoutes(authScope, deps.authController), {
-    prefix: "/auth"
+    prefix: "/api/auth"
   });
 
   await app.register(async (listingsScope) => listingsRoutes(listingsScope, deps.listingsController), {
-    prefix: "/listings"
+    prefix: "/api/listings"
   });
 
   await app.register(
     async (landlordScope) => landlordListingsRoutes(landlordScope, deps.listingsController),
-    { prefix: "/landlord" }
+    { prefix: "/api/landlord" }
   );
 
   await app.register(async (favScope) => favouritesRoutes(favScope, deps.favouritesController), {
-    prefix: "/favourites"
+    prefix: "/api/favourites"
   });
 
   await app.register(
-    async (msgScope) =>
-      messagingRoutes(msgScope, deps.messagingController, deps.messagingService, deps.messagesHub),
-    { prefix: "/conversations" }
+    async (msgScope) => messagingRestRoutes(msgScope, deps.messagingController),
+    { prefix: "/api/conversations" }
   );
 
   await app.register(async (reportsScope) => reportsRoutes(reportsScope, deps.reportsController), {
-    prefix: "/reports"
+    prefix: "/api/reports"
   });
 
   await app.register(
     async (adminReportsScope) => adminReportsRoutes(adminReportsScope, deps.reportsController),
-    { prefix: "/admin/reports" }
+    { prefix: "/api/admin/reports" }
   );
 
   await app.register(async (profileScope) => profileRoutes(profileScope, deps.profileController), {
-    prefix: "/users"
+    prefix: "/api/users"
   });
 
   await app.register(async (uploadsScope) => uploadsRoutes(uploadsScope, deps.uploadController), {
-    prefix: "/uploads"
+    prefix: "/api/uploads"
   });
 
   await app.register(async (usersScope) => usersRoutes(usersScope, deps.usersController), {
-    prefix: "/admin/users"
+    prefix: "/api/admin/users"
   });
 
   await app.register(
     async (adminScope) => adminListingsRoutes(adminScope, deps.adminListingsController),
-    { prefix: "/admin/listings" }
+    { prefix: "/api/admin/listings" }
+  );
+
+  // WebSocket lives outside /api so the SPA fallback can identify it via the /ws prefix.
+  await app.register(
+    async (wsScope) => messagingWsRoutes(wsScope, deps.messagingService, deps.messagesHub),
+    { prefix: "/ws" }
   );
 }

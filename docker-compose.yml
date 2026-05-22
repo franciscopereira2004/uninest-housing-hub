@@ -1,35 +1,20 @@
+# NOTA: este compose serve APENAS para testar localmente o build de produção
+# (imagem multi-stage com Fastify a servir também o frontend estático).
+# NÃO usar para desenvolvimento — em dev continua-se a correr `npm run dev` num
+# terminal e `npm --prefix backend run dev` noutro (Vite + tsx watch separados).
+
 services:
-  frontend:
+  app:
     build:
       context: .
       dockerfile: Dockerfile
     ports:
-      - "${FRONTEND_PORT:-5173}:5173"
-    volumes:
-      - .:/app
-      - /app/node_modules
+      - "8081:8081"
     environment:
-      NODE_ENV: development
-      VITE_API_URL: "http://localhost:${BACKEND_PORT:-4000}"
-    depends_on:
-      - backend
+      NODE_ENV: production
+      SERVE_FRONTEND: "true"
+      PORT: 8081
+      USE_IN_MEMORY_DB: "true"
+      BLOB_USE_MOCK: "true"
+      JWT_SECRET: change-me-in-production
     restart: unless-stopped
-    command: npm run dev -- --host 0.0.0.0 --port 5173
-
-  backend:
-    build:
-      context: ./backend
-      dockerfile: Dockerfile
-    ports:
-      - "${BACKEND_PORT:-4000}:4000"
-    volumes:
-      - ./backend:/app
-      - /app/node_modules
-    env_file:
-      - ./backend/.env
-    environment:
-      NODE_ENV: development
-      PORT: 4000
-      FRONTEND_ORIGIN: "http://localhost:${FRONTEND_PORT:-5173}"
-    restart: unless-stopped
-    command: npm run dev

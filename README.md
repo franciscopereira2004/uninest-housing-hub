@@ -98,6 +98,7 @@ Todos pertencem ao `landlord@uninest.local`, têm 3 fotos cada e cobrem várias 
 | `NODE_ENV` | `development` | |
 | `PORT` | `4000` | Porta HTTP/WS |
 | `FRONTEND_ORIGIN` | `http://localhost:5173` | Origem permitida no CORS |
+| `SERVE_FRONTEND` | `false` | Quando `true`, o Fastify também serve o build do Vite em `../dist` (deploy single-app). Usar `false` em dev. |
 | `JWT_SECRET` | `change-me-in-production` | **MUDAR em produção** |
 | `JWT_EXPIRES_IN` | `7d` | Validade dos tokens |
 | `USE_IN_MEMORY_DB` | `true` | Quando `false` usa Cosmos |
@@ -205,6 +206,26 @@ npm run docker:up        # build + start frontend + backend
 npm run docker:down      # stop
 npm run docker:logs      # tail logs
 ```
+
+### Testar build de produção localmente
+
+A imagem produzida pelo `Dockerfile` é single-container: Fastify serve a API em `/api` e o build do Vite em `/` (com `SERVE_FRONTEND=true`). Útil para validar o artefacto antes de fazer deploy no Azure App Service.
+
+```bash
+docker build -t uninest:prod .
+docker run -p 8081:8081 \
+  -e USE_IN_MEMORY_DB=true \
+  -e BLOB_USE_MOCK=true \
+  -e JWT_SECRET=test \
+  -e PORT=8081 \
+  uninest:prod
+
+# noutro terminal
+curl http://localhost:8081/api/health
+# → { "status": "ok", "uptime": …, "timestamp": … }
+```
+
+Alternativa via compose (mesma imagem, env vars já lá): `docker compose up --build`.
 
 ## Testar manualmente o WebSocket
 

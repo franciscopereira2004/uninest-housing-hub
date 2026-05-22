@@ -53,5 +53,5 @@ export function buildConversationWebSocketUrl(conversationId: string): string | 
   const token = getToken();
   if (!token) return null;
   const base = getApiBaseUrl().replace(/^http/, "ws");
-  return `${base}/conversations/${conversationId}/ws?token=${encodeURIComponent(token)}`;
+  return `${base}/ws/conversations/${conversationId}?token=${encodeURIComponent(token)}`;
 }

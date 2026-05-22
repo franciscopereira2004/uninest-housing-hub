@@ -10,6 +10,8 @@ function getBlobModeLabel() {
   return env.BLOB_USE_MOCK ? "mock" : "azure-blob";
 }
 
+const port = Number(env.PORT) || 4000;
+
 function formatStartupError(error: unknown): string {
   if (!(error instanceof Error)) {
     return "[startup] Failed to initialize backend server.";
@@ -30,7 +32,7 @@ async function start() {
     console.info("[startup] Initializing backend server...");
     app = await buildApp();
     await app.listen({
-      port: env.PORT,
+      port,
       host: "0.0.0.0"
     });
     app.log.info(

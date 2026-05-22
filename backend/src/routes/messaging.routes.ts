@@ -4,11 +4,9 @@ import { authMiddleware } from "../middlewares/auth.middleware.js";
 import type { MessagesHub } from "../services/messages-hub.js";
 import type { MessagingService } from "../services/messaging.service.js";
 
-export async function messagingRoutes(
+export async function messagingRestRoutes(
   app: FastifyInstance,
-  controller: MessagingController,
-  service: MessagingService,
-  hub: MessagesHub
+  controller: MessagingController
 ) {
   // REST endpoints — require auth via Authorization header
   app.register(async (rest) => {
@@ -27,10 +25,16 @@ export async function messagingRoutes(
       controller.sendMessage
     );
   });
+}
 
+export async function messagingWsRoutes(
+  app: FastifyInstance,
+  service: MessagingService,
+  hub: MessagesHub
+) {
   // WebSocket — auth via ?token= query param (browsers can't set headers on WS)
   app.get<{ Params: { id: string }; Querystring: { token?: string } }>(
-    "/:id/ws",
+    "/conversations/:id",
     { websocket: true },
     async (socket, request) => {
       const token = request.query?.token;
