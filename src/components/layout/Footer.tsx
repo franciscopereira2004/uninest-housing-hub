@@ -1,4 +1,5 @@
 import { Link } from "react-router-dom";
+import logo from "@/assets/logo.png";
 
 export function Footer() {
   return (
@@ -6,10 +7,7 @@ export function Footer() {
       <div className="container grid gap-10 py-12 md:grid-cols-4">
         <div>
           <div className="flex items-center gap-2">
-            <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-gradient-brand text-primary-foreground">
-              <span className="font-display text-lg font-bold">U</span>
-            </div>
-            <span className="font-display text-xl font-semibold">UniNest</span>
+            <img src={logo} alt="UniNest logo" className="h-9 w-auto max-w-[150px] object-contain" />
           </div>
           <p className="mt-4 max-w-xs text-sm text-muted-foreground">
             A plataforma que liga estudantes e senhorios de forma simples,
@@ -35,10 +33,11 @@ export function Footer() {
         </div>
 
         <div>
-          <h4 className="mb-3 text-sm font-semibold">Suporte</h4>
+          <h4 className="mb-3 text-sm font-semibold">UniNest</h4>
           <ul className="space-y-2 text-sm text-muted-foreground">
+            <li><Link to="/about" className="hover:text-foreground">Sobre nós</Link></li>
+            <li><Link to="/safety" className="hover:text-foreground">Confiança e segurança</Link></li>
             <li>ajuda@uninest.pt</li>
-            <li>+351 220 000 000</li>
           </ul>
         </div>
       </div>

@@ -7,10 +7,11 @@ export function errorHandler(
   _request: FastifyRequest,
   reply: FastifyReply
 ) {
-  if (error instanceof ZodError) {
+  if (error instanceof ZodError || error?.name === "ZodError" || error?.constructor?.name === "ZodError") {
+    const issues = (error as ZodError).issues ?? [];
     return reply.status(400).send({
       message: "Dados inválidos.",
-      errors: error.issues
+      errors: issues
     });
   }
 

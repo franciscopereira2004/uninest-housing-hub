@@ -1,5 +1,5 @@
 import { Link, useNavigate } from "react-router-dom";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import {
   ArrowRight,
   Building2,
@@ -15,15 +15,38 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { PublicLayout } from "@/components/layout/PublicLayout";
 import { ListingCard } from "@/components/listings/ListingCard";
-import { getCities, getListings } from "@/data/listings";
+import { fetchListings, getCities } from "@/data/listings";
+import type { Listing } from "@/types";
+import { toast } from "sonner";
 import heroImg from "@/assets/hero-room.jpg";
 
 const Index = () => {
   const navigate = useNavigate();
   const [city, setCity] = useState("");
   const [maxPrice, setMaxPrice] = useState("");
-  const featured = getListings().slice(0, 4);
-  const cities = getCities();
+  const [featured, setFeatured] = useState<Listing[]>([]);
+  const [cities, setCities] = useState<string[]>([]);
+
+  useEffect(() => {
+    let cancelled = false;
+
+    const loadFeatured = async () => {
+      try {
+        const listings = await fetchListings({ sortBy: "recent" });
+        if (cancelled) return;
+        setFeatured(listings.slice(0, 4));
+        setCities(getCities());
+      } catch (error) {
+        if (cancelled) return;
+        toast.error(error instanceof Error ? error.message : "Erro ao carregar anúncios em destaque.");
+      }
+    };
+
+    void loadFeatured();
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
   const onSearch = (e: React.FormEvent) => {
     e.preventDefault();

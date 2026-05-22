@@ -16,6 +16,16 @@ export class UploadController {
     return reply.status(201).send(result);
   };
 
+  uploadListingImage = async (request: FastifyRequest, reply: FastifyReply) => {
+    const userId = (request.user as { sub: string }).sub;
+    const file = await request.file();
+    if (!file) {
+      throw new HttpError(400, "Ficheiro em falta.");
+    }
+    const result = await this.uploadService.uploadListingImage(userId, file);
+    return reply.status(201).send(result);
+  };
+
   uploadRoomImage = async (request: FastifyRequest, reply: FastifyReply) => {
     let roomId: string | undefined;
     let uploadedFile: Awaited<ReturnType<FastifyRequest["file"]>> | undefined;

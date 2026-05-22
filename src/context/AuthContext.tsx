@@ -1,4 +1,4 @@
-import { createContext, useContext, useEffect, useMemo, useState, type ReactNode } from "react";
+import { createContext, useCallback, useContext, useEffect, useMemo, useState, type ReactNode } from "react";
 import { apiRequest } from "@/lib/api";
 import type { User, UserRole } from "@/types";
 
@@ -10,6 +10,7 @@ interface AuthContextValue {
   loading: boolean;
   login: (email: string, password: string) => Promise<User>;
   register: (data: { name: string; email: string; password: string; role: UserRole; phone?: string }) => Promise<User>;
+  refreshUser: () => Promise<User | null>;
   logout: () => void;
 }
 
@@ -32,31 +33,35 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
 
+  const refreshUser = useCallback(async (): Promise<User | null> => {
+    const token = getToken();
+    if (!token) {
+      setUser(null);
+      localStorage.removeItem(SESSION_KEY);
+      return null;
+    }
+
+    try {
+      const { user: me } = await apiRequest<MeResponse>("/auth/me", { token });
+      setUser(me);
+      localStorage.setItem(SESSION_KEY, JSON.stringify(me));
+      return me;
+    } catch {
+      localStorage.removeItem(TOKEN_KEY);
+      localStorage.removeItem(SESSION_KEY);
+      setUser(null);
+      return null;
+    }
+  }, []);
+
   useEffect(() => {
     const bootstrapSession = async () => {
-      const token = getToken();
-      if (!token) {
-        setLoading(false);
-        return;
-      }
-
-      try {
-        const { user: me } = await apiRequest<MeResponse>("/auth/me", {
-          token
-        });
-        setUser(me);
-        localStorage.setItem(SESSION_KEY, JSON.stringify(me));
-      } catch {
-        localStorage.removeItem(TOKEN_KEY);
-        localStorage.removeItem(SESSION_KEY);
-        setUser(null);
-      } finally {
-        setLoading(false);
-      }
+      await refreshUser();
+      setLoading(false);
     };
 
     void bootstrapSession();
-  }, []);
+  }, [refreshUser]);
 
   const value = useMemo<AuthContextValue>(
     () => ({
@@ -84,13 +89,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         setUser(newUser);
         return newUser;
       },
+      refreshUser,
       logout() {
         localStorage.removeItem(SESSION_KEY);
         localStorage.removeItem(TOKEN_KEY);
         setUser(null);
       }
     }),
-    [user, loading]
+    [user, loading, refreshUser]
   );
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

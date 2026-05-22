@@ -8,6 +8,12 @@ import { PublicLayout } from "@/components/layout/PublicLayout";
 import { useAuth } from "@/context/AuthContext";
 import { toast } from "sonner";
 
+const DEFAULT_LOGINS = {
+  admin: { email: "admin@uninest.local", password: "ChangeMe123!" },
+  landlord: { email: "landlord@uninest.local", password: "ChangeMe123!" },
+  student: { email: "student@uninest.local", password: "ChangeMe123!" }
+} as const;
+
 const Login = () => {
   const navigate = useNavigate();
   const { login } = useAuth();
@@ -15,13 +21,20 @@ const Login = () => {
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
 
+  const fillCredentials = (type: keyof typeof DEFAULT_LOGINS) => {
+    setEmail(DEFAULT_LOGINS[type].email);
+    setPassword(DEFAULT_LOGINS[type].password);
+  };
+
   const submit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
     try {
-      await login(email, password);
+      const loggedUser = await login(email, password);
       toast.success("Bem-vindo de volta!");
-      navigate("/");
+      if (loggedUser.role === "admin") navigate("/admin");
+      else if (loggedUser.role === "landlord") navigate("/landlord");
+      else navigate("/student");
     } catch (err) {
       toast.error(err instanceof Error ? err.message : "Erro ao entrar.");
     } finally {
@@ -40,6 +53,24 @@ const Login = () => {
           <p className="mt-1 text-sm text-muted-foreground">
             Acede ao teu painel UniNest.
           </p>
+
+          <div className="mt-4 rounded-xl border border-dashed bg-muted/30 p-4">
+            <p className="text-sm font-medium text-foreground">Contas de demonstração</p>
+            <p className="mt-1 text-xs text-muted-foreground">
+              Palavra-passe comum: <span className="font-medium">ChangeMe123!</span>
+            </p>
+            <div className="mt-3 grid grid-cols-3 gap-2">
+              <Button type="button" variant="secondary" size="sm" onClick={() => fillCredentials("admin")}>
+                Admin
+              </Button>
+              <Button type="button" variant="secondary" size="sm" onClick={() => fillCredentials("landlord")}>
+                Senhorio
+              </Button>
+              <Button type="button" variant="secondary" size="sm" onClick={() => fillCredentials("student")}>
+                Estudante
+              </Button>
+            </div>
+          </div>
 
           <form onSubmit={submit} className="mt-6 space-y-4">
             <div className="space-y-2">

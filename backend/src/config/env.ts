@@ -13,22 +13,26 @@ const envSchema = z.object({
   PORT: z.coerce.number().default(4000),
   FRONTEND_ORIGIN: z.string().default("http://localhost:5173"),
   USE_IN_MEMORY_DB: z
-    .string()
+    .enum(["true", "false"])
     .optional()
-    .transform((value) => value !== "false"),
+    .transform((value) => value === "true"),
   COSMOS_ENDPOINT: z.string().optional(),
   COSMOS_KEY: z.string().optional(),
   COSMOS_DATABASE_ID: z.string().default("uninest"),
   COSMOS_USERS_CONTAINER: z.string().default("users"),
   COSMOS_LISTINGS_CONTAINER: z.string().default("listings"),
+  COSMOS_FAVOURITES_CONTAINER: z.string().default("favourites"),
+  COSMOS_CONVERSATIONS_CONTAINER: z.string().default("conversations"),
+  COSMOS_MESSAGES_CONTAINER: z.string().default("messages"),
+  COSMOS_REPORTS_CONTAINER: z.string().default("reports"),
   BLOB_CONNECTION_STRING: z.string().optional(),
   BLOB_AVATARS_CONTAINER: z.string().default("avatars"),
   BLOB_ROOM_IMAGES_CONTAINER: z.string().default("room-images"),
   BLOB_PROPERTY_IMAGES_CONTAINER: z.string().default("property-images"),
   BLOB_USE_MOCK: z
-    .string()
+    .enum(["true", "false"])
     .optional()
-    .transform((value) => value !== "false"),
+    .transform((value) => value === "true"),
   BLOB_MOCK_BASE_URL: z.string().default("https://example.blob.core.windows.net"),
   JWT_SECRET: z.string().default("change-me-in-production"),
   JWT_EXPIRES_IN: z.string().default("7d"),

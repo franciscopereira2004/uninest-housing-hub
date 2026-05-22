@@ -29,6 +29,14 @@ export class UploadService {
     });
   }
 
+  async uploadListingImage(userId: string, file: MultipartFile): Promise<{ url: string }> {
+    return this.uploadFile({
+      container: env.BLOB_PROPERTY_IMAGES_CONTAINER,
+      path: `${userId}/${randomUUID()}-${sanitizeFilename(file.filename)}`,
+      file
+    });
+  }
+
   private async uploadFile({
     container,
     path,
@@ -61,7 +69,7 @@ export class UploadService {
           ? this.blobContext.roomImages
           : this.blobContext.propertyImages;
 
-    await targetContainer.createIfNotExists();
+    await targetContainer.createIfNotExists({ access: "blob" });
     const blockBlobClient = targetContainer.getBlockBlobClient(path);
     await blockBlobClient.uploadData(buffer, {
       blobHTTPHeaders: {

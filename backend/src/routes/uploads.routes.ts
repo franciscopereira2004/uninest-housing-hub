@@ -6,6 +6,13 @@ import type { UploadController } from "../controllers/upload.controller.js";
 export async function uploadsRoutes(app: FastifyInstance, controller: UploadController) {
   app.post("/avatar", { preHandler: authMiddleware }, controller.uploadAvatar);
   app.post(
+    "/listing-image",
+    {
+      preHandler: [authMiddleware, requireRole(["landlord", "admin"])]
+    },
+    controller.uploadListingImage
+  );
+  app.post(
     "/room-image",
     {
       preHandler: [authMiddleware, requireRole(["landlord", "admin"])]
