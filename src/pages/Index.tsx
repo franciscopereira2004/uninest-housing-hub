@@ -75,10 +75,11 @@ const Index = () => {
           <div className="max-w-3xl animate-fade-in-up text-primary-foreground">
             <span className="inline-flex items-center gap-2 rounded-full bg-background/15 px-3 py-1 text-xs font-medium backdrop-blur">
               <Sparkles className="h-3.5 w-3.5" />
-              Plataforma de gestão de arrendamento estudantil
+              De estudantes, para estudantes
             </span>
             <h1 className="mt-6 font-display text-4xl font-bold leading-tight md:text-6xl">
-              Encontra o teu próximo lar enquanto estudas.
+              Encontra o teu próximo <span style={{ color: "#3ABC77", fontWeight: "bold", textDecoration: "underline" }}>lar</span> enquanto estudas.
+         
             </h1>
             <p className="mt-5 max-w-xl text-lg text-primary-foreground/90 md:text-xl">
               Quartos verificados, contratos digitais e gestão de rendas — tudo
